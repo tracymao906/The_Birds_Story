@@ -1,6 +1,6 @@
 # Data
 ```{r}
-# birds_data <- read.csv("birds(1).csv", stringsAsFactors = FALSE)
+birds_data <- read.csv("birds(1).csv", stringsAsFactors = FALSE)
 # head(birds_data)
 ```
 ## Description
