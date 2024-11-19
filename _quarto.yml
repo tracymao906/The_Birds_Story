@@ -6,11 +6,11 @@ execute:
   echo: true
 
 book:
-  title: "YOUR PROJECT TITLE"
+  title: "The Birds Story"
   author:
-    - AUTHOR1 (UNI1)
-    - AUTHOR2 (UNI2)
-  repo-url: https://github.com/YOUR_GITHUB_ACCOUNT/REPO_NAME
+    - Tracy Mao (jm5893)
+    - Yuntong Ju (yj2564)
+  repo-url: https://github.com/tracymao906/The_Birds_Story
   date: today
   page-footer:
     right: |
