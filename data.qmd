@@ -1,5 +1,9 @@
 # Data
-
+```{r}
+birds_data <- read.csv("birds(1).csv", stringsAsFactors = FALSE)
+head(birds_data)
+```
 ## Description
+We are using a bird sightings of New York state dataset originating from eBird.org, a platform collecting bird observation data submitted by citizen scientists, birdwatchers, and researchers. Providing details about bird species, locations, and specific and detailed characteristics. The website also states clearly that the data is curated and reviewed for accuracy before being made publicly available. The dataset is in CSV format and contains 9,678 rows and 12 columns. It includes 12 key variables, including county, category, taxonomic group and subgroup, scientific name and common name, year last documented, NY listing status, federal listing status, state and global conservation ranks, and distribution status. The updates are not explicitly stated on the website, but it is likely that the dataset is updated periodically, depending on new observations and reviews. Although this dataset does not have any missing value, it has some “not available” values in some columns, so we need to preprocess to deal with that. In addition, some sightings might be outdated, so we should consider deleting them. Lastly, we have imported the dataset using read.csv() in RStudio.
 
 ## Missing value analysis
