@@ -21,7 +21,7 @@ library(naniar)
 birds_data <- birds_data |>
   mutate(Year.Last.Documented = ifelse(Year.Last.Documented == "not available", NA, Year.Last.Documented))
 
-# calculate the percentage of missing values for each column
+# calculate percentage of missing values for each column
 missing_summary <- data.frame(
   Column = names(birds_data),
   MissingPercent = colSums(is.na(birds_data)) / nrow(birds_data) * 100)
