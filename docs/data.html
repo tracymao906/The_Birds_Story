@@ -267,7 +267,7 @@ Attaching package: 'dplyr'</code></pre>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>birds_data <span class="ot">&lt;-</span> birds_data <span class="sc">|&gt;</span></span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Year.Last.Documented =</span> <span class="fu">ifelse</span>(Year.Last.Documented <span class="sc">==</span> <span class="st">"not available"</span>, <span class="cn">NA</span>, Year.Last.Documented))</span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate the percentage of missing values for each column</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co"># calculate percentage of missing values for each column</span></span>
 <span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>missing_summary <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">Column =</span> <span class="fu">names</span>(birds_data),</span>
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">MissingPercent =</span> <span class="fu">colSums</span>(<span class="fu">is.na</span>(birds_data)) <span class="sc">/</span> <span class="fu">nrow</span>(birds_data) <span class="sc">*</span> <span class="dv">100</span>)</span>
