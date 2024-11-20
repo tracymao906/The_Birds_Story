@@ -36,4 +36,4 @@ ggplot(missing_summary, aes(x = Column, y = MissingPercent)) +
 vis_miss(birds_data) +
   labs(title = "Heatmap of Missing Values")
 ```
-As we can see from the bar chart and the heatmap, we can see that approximately 2% of the values in "year last documented" are not available. This could possibly affect our anlysis of the temporal patterns of trends in birds documentation. We should consider using imputation methods to deal with "not available" data in this column.
+As we can see from the bar chart and the heatmap, we detect that approximately 2% of the values in "year last documented" are not available. This could possibly affect our anlysis of the temporal patterns of trends in birds documentation. We should consider using imputation methods to deal with "not available" data in this column.
