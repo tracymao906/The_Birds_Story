@@ -58,13 +58,11 @@ birds_sampled_filtered_nta <- nyc_point_poly(birds_sampled_filtered_point, "nta"
 
 ```{r,results = 'hide', warnings=FALSE, message=FALSE}
 # Get the Manhattan basemap
-
 register_stadiamaps("cce884ac-3f72-43ac-8b87-82599f324a82", write = FALSE)
 
 manhattan_map <- get_stadiamap(
   bbox = c(left = -74.03, bottom = 40.7, right = -73.92, top = 40.85),
-  zoom = 13
-)
+  zoom = 13)
 
 bird_observation_count <- birds_sampled_filtered |>
   group_by(longitude, latitude) |>  # Group by spatial coordinates
@@ -218,6 +216,8 @@ central_park_map <- get_stadiamap(
   bbox = c(left = -73.9839, bottom = 40.7624, right = -73.9480, top = 40.8007),
   zoom = 14,maptype = "alidade_smooth"  # Higher zoom for better focus
 )
+central_park_data <- birds_sampled |>
+  filter(grepl("Central Park", locality, ignore.case = TRUE))
 
 # Step 2: Create HDR map
 ggmap(central_park_map) +
@@ -432,6 +432,7 @@ Combining previous results, we want to explore what time in which season should 
 
 
 ```{r}
+
 interactive <- birds_sampled |>
   mutate(
     observation_time = hms::as_hms(time_observations_started),
@@ -445,6 +446,13 @@ interactive <- birds_sampled |>
   ) |>
   group_by(season, common_name) |>
   summarise(sightings = sum(observation_count), .groups = "drop")
+
+# Prepare the data: Count unique species per day
+unique_species_time_series <- birds_sampled |>
+  group_by(observation_date) |>
+  summarise(unique_species_count = n_distinct(common_name), .groups = "drop")
+unique_species_time_series$observation_date <- as.Date(unique_species_time_series$observation_date)
+
 
 ```
 
