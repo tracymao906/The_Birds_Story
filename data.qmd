@@ -1,30 +1,72 @@
 # Data
+
 ```{r}
-birds_data <- read.csv("birds(1).csv", stringsAsFactors = FALSE)
-# head(birds_data)
+# Check if the 'auk' package is installed
+# auk is the eBird package to load in data in txt form and convert them into dataframe
+if (!requireNamespace("auk", quietly = TRUE)) {
+  install.packages("auk")
+}
+# https://cornelllabofornithology.github.io/auk/
+
+
+# NYC borough and map package
+if (!requireNamespace("nycgeo", quietly = TRUE)) {
+  remotes::install_github("mfherman/nycgeo")
+}
+# https://nycgeo.mattherman.info/
+# https://nycgeo.mattherman.info/articles/nycgeo.html
+
+if (!requireNamespace("sf", quietly = TRUE)) {
+  install.packages("sf")
+}
+
+# Load the package
+library(auk)
+library(nycgeo)
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(lubridate)
+library(scales)
+library(sf)
+library(naniar)
 ```
+
+```{r}
+# 2023 data of all birds in Manhattan
+birds_sampled <- read.csv("birds_sampled.csv")
+```
+
+```{r}
+# sometimes people write X in place of how many birds they observe. X means "observed", so recode as 1
+birds_sampled$observation_count[allbirds2023$observation_count == "X"] <- 1
+# 
+# # Convert the column to numeric, it is originally a factor
+birds_sampled$observation_count <- as.numeric(birds_sampled$observation_count)
+warnings() 
+```
+
+```{r}
+# display all types of birds in Manhattan in 2023
+# unique(birds_sampled$common_name) 
+```
+
 ## Description
-We are using a bird sightings of New York state dataset originating from eBird.org, a platform collecting bird observation data submitted by citizen scientists, birdwatchers, and researchers. Providing details about bird species, locations, and specific and detailed characteristics. The website also states clearly that the data is curated and reviewed for accuracy before being made publicly available. The dataset is in CSV format and contains 9,678 rows and 12 columns. It includes 12 key variables, including county, category, taxonomic group and subgroup, scientific name and common name, year last documented, NY listing status, federal listing status, state and global conservation ranks, and distribution status. The updates are not explicitly stated on the website, but it is likely that the dataset is updated periodically, depending on new observations and reviews. Although this dataset does not have any missing value, it has some “not available” values in some columns, so we need to preprocess to deal with that. In addition, some sightings might be outdated, so we should consider deleting them. Lastly, we have imported the dataset using read.csv() in RStudio.
+This dataset that we are using has observations of 5000 birds sightings in Manhattan from 2023 Jan to 2023 Dec, which is from the eBird Platform that collects bird observation data submitted by citizen scientists and researchers. We randomly sampled 5000 observations from all the hundreds of thousands originally collected by the eBird platform. The data_readme.pdf file has explanation of each of the 48 variables, and we are mainly using location, time, and species-specific variables for our analysis including common_name, longitude, latitude, observation_date, observation_start_time and etc. 
+The auk package is eBird's own package to process the data. https://cornelllabofornithology.github.io/auk/
+The nycgeo package is the NYC map package I'm using to see how many species there are in each neighborhood.
 
 ## Missing value analysis
 ```{r}
 # check for missing values in each column
-# colSums(is.na(birds_data))
+# colSums(is.na(birds_sampled))
 ```
-Although there's no missing data, we found that in the "Year.Last.Documented" column, we have "not available" values. Therefore, we are going to treat these values as useless missing values.
+
 ```{r}
-library(ggplot2)
-library(dplyr)
-library(naniar)
-
-# replace these values with missing values
-birds_data <- birds_data |>
-  mutate(Year.Last.Documented = ifelse(Year.Last.Documented == "not available", NA, Year.Last.Documented))
-
 # calculate percentage of missing values for each column
 missing_summary <- data.frame(
-  Column = names(birds_data),
-  MissingPercent = colSums(is.na(birds_data)) / nrow(birds_data) * 100)
+  Column = names(birds_sampled),
+  MissingPercent = colSums(is.na(birds_sampled)) / nrow(birds_sampled) * 100)
 
 # bar chart
 ggplot(missing_summary, aes(x = Column, y = MissingPercent)) +
@@ -33,7 +75,6 @@ ggplot(missing_summary, aes(x = Column, y = MissingPercent)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # heatmap
-vis_miss(birds_data) +
+vis_miss(birds_sampled) +
   labs(title = "Heatmap of Missing Values")
 ```
-As we can see from the bar chart and the heatmap, we detect that approximately 2% of the values in "year last documented" are not available. This could possibly affect our anlysis of the temporal patterns of trends in birds documentation. We should consider using imputation methods to deal with "not available" data in this column.
