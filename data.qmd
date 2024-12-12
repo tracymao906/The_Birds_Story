@@ -1,3 +1,7 @@
+```{r, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
+```
+
 # Data
 
 ```{r}
@@ -52,11 +56,11 @@ warnings()
 ```
 
 ## Description
-This dataset that we are using has observations of 5000 birds sightings in Manhattan from 2023 Jan to 2023 Dec, which is from the eBird Platform that collects bird observation data submitted by citizen scientists and researchers. We randomly sampled 5000 observations from all the hundreds of thousands originally collected by the eBird platform. The data_readme.pdf file has explanation of each of the 48 variables, and we are mainly using location, time, and species-specific variables for our analysis including common_name, longitude, latitude, observation_date, observation_start_time and etc. 
-The auk package is eBird's own package to process the data. https://cornelllabofornithology.github.io/auk/
-The nycgeo package is the NYC map package I'm using to see how many species there are in each neighborhood.
+
+This dataset that we are using has observations of 5000 birds sightings in Manhattan from 2023 Jan to 2023 Dec, which is from the eBird Platform that collects bird observation data submitted by citizen scientists and researchers. We randomly sampled 5000 observations from all the hundreds of thousands originally collected by the eBird platform. The data_readme.pdf file has explanation of each of the 48 variables, and we are mainly using location, time, and species-specific variables for our analysis including common_name, longitude, latitude, observation_date, observation_start_time and etc. The auk package is eBird's own package to process the data. https://cornelllabofornithology.github.io/auk/ The nycgeo package is the NYC map package I'm using to see how many species there are in each neighborhood.
 
 ## Missing value analysis
+
 ```{r}
 # check for missing values in each column
 # colSums(is.na(birds_sampled))
@@ -70,7 +74,7 @@ missing_summary <- data.frame(
 
 # bar chart
 ggplot(missing_summary, aes(x = Column, y = MissingPercent)) +
-  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_bar(stat = "identity", fill = "#fd8d3c") +
   labs(title = "Percentage of Missing Values by Column", x = "Columns", y = "Percentage Missing (%)") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
@@ -79,3 +83,4 @@ vis_miss(birds_sampled) +
   labs(title = "Heatmap of Missing Values")
 ```
 According to the bar chart and the heatmap, some columns, such as age_sex, breeding_category, and atlas_block, have almost 100% of their values missing, but it would not impact our analysis much, since we will not be using these columns for visualization. Columns like behavior_code and breeding_code also show a prominent proportions of missing data (around 50-75%), but we don't need to worry much since they will also not be useful to us. Among all the variables that we are potentially using, only time_observation_started misses a few values, which won't affect the overall analysis. Therefore, although some values are indeed missing from our dataset (~20%), they won't influence our analysis since we will not be applying them to our analysis process.
+

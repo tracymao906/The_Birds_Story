@@ -1,9 +1,13 @@
-```{r}
+```{r, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE, echo = FALSE)
+```
+
+```{r,results = 'hide',message=FALSE, message=FALSE}
 Sys.setlocale("LC_ALL", "English")
 ```
 
 # Results
-```{r}
+```{r,results = 'hide', warning=FALSE, message=FALSE}
 library(GGally)
 library(ggplot2)
 library(plotly)
@@ -25,11 +29,17 @@ library(geomtextpath)
 ```
 If you are a bird enthusiast who lives in Manhattan, you may wonder where to see birds in the city. Where are the birds distributed? What time do they appear? What season in a year do they come out the most? What types of birds are there to see? Our analysis of the eBirds data will answer all of these questions, providing a practical guide to bird-sighting in the city.
 
-## Part I: Where to See the Most Birds?
+##  Where to See the Most Birds?
 Manhattan is made up of multiple neighborhoods, each with its distinct greenspace, population density, biodiversity, and bird-diversity. With that in mind, we want to see which neighborhood has the most birds.
 
-```{r}
-# only include common_name, longitude, latitude and save as birds_sampled_filtered
+### Bird Distribution
+
+```{r,results = 'hide', warning=FALSE, message=FALSE}
+birds_sampled <- read.csv("birds_sampled.csv")
+birds_sampled$observation_count[birds_sampled$observation_count == "X"] <- 1
+birds_sampled$observation_count <- as.numeric(birds_sampled$observation_count)
+
+
 birds_sampled_filtered <- birds_sampled |>
   select(common_name, longitude, latitude, observation_count)
 
@@ -46,7 +56,7 @@ birds_sampled_filtered_point <- birds_sampled_filtered |>
 birds_sampled_filtered_nta <- nyc_point_poly(birds_sampled_filtered_point, "nta")
 ```
 
-```{r}
+```{r,results = 'hide', warnings=FALSE, message=FALSE}
 # Get the Manhattan basemap
 register_stadiamaps("cce884ac-3f72-43ac-8b87-82599f324a82", write = FALSE)
 
@@ -74,7 +84,7 @@ ggmap(manhattan_map) +
   ) +
   # Optional: Hide the legend
   theme(
-    plot.title = element_text(size = 16, hjust = 0.8),  # Center and style the title
+    plot.title = element_text(hjust = 0.5),  # Center and style the title
     axis.title = element_text(size = 12)  # Style axis labels
   )
 
@@ -82,7 +92,7 @@ ggmap(manhattan_map) +
 
 Looking at this map, it is pretty obvious that birds are clustered around the oval-shaped area in the center of Manhattan, which happens to be Central Park. Central Park provides natural habitats for a diverse variety of birds to live in. Other areas that have the many birds are Randall's Island Park, Lower Manhattan due to the fact that these neighborhoods have more greenspace.
 
-```{r, fig.width=8}
+```{r, fig.width=8, fig.height = 10}
 # Group and summarize the bird species count 
 bird_species_count <- birds_sampled_filtered_nta |>
   group_by(nta_name) |>  # Group by Neighborhood Tabulation Area name
@@ -104,13 +114,13 @@ nyc_nta_with_birds <- nyc_nta_boundaries |>
 # plot each neighborhood, color by the number of unique species
 ggplot(nyc_nta_with_birds) +
   geom_sf(aes(fill = unique_species)) +
-  geom_sf_text(aes(label = nta_name.x), size = 2, color = "black", check_overlap = TRUE) +
+  geom_sf_text(aes(label = nta_name.x), size = 4, color = "black", check_overlap = TRUE) +
   annotate(
     "text",
     x = mean(st_bbox(nyc_nta_with_birds)$xmin + st_bbox(nyc_nta_with_birds)$xmax) / 1.99, 
     y = mean(st_bbox(nyc_nta_with_birds)$ymin + st_bbox(nyc_nta_with_birds)$ymax) / 2, 
     label = "Central Park",
-    size = 2,
+    size = 4,
     color = "black",
   ) +
   annotate(
@@ -118,7 +128,7 @@ ggplot(nyc_nta_with_birds) +
     x = mean(st_bbox(nyc_nta_with_birds)$xmin + st_bbox(nyc_nta_with_birds)$xmax) / 1.975, 
     y = mean(st_bbox(nyc_nta_with_birds)$ymin + st_bbox(nyc_nta_with_birds)$ymax) / 1.98, 
     label = "Randall's Island Park",
-    size = 2,
+    size = 4,
     color = "black",
   ) +
   annotate(
@@ -126,13 +136,13 @@ ggplot(nyc_nta_with_birds) +
     x = mean(st_bbox(nyc_nta_with_birds)$xmin + st_bbox(nyc_nta_with_birds)$xmax) / 2.02, 
     y = mean(st_bbox(nyc_nta_with_birds)$ymin + st_bbox(nyc_nta_with_birds)$ymax) / 2.35, 
     label = "Governor's Island",
-    size = 2,
+    size = 4,
     color = "black",
   ) +
   scale_fill_gradient(
     name = "Bird Species",
     low = "white",  
-    high = "purple4",  
+    high = "#fd8d3c",  
     na.value = "grey90" 
   ) +
   
@@ -144,7 +154,9 @@ ggplot(nyc_nta_with_birds) +
   ) +
   theme(
     legend.position = "right",
-    panel.grid = element_blank()
+    panel.grid = element_blank(),
+    plot.title = element_text(hjust = 0.5, size =15),  # Center and style the title
+    axis.title = element_text(size = 12) 
   )
 ```
 Taking a closer look at the bird distribution in each neighborhood, the pattern becomes more obvious. Birds like to live in parks. Central park, Inwood Hill Park, and the Governor's Island have higher number of bird species, with around 200 species. On the other hand, the lighter regions are urbanzied neighborhoods like midtown Manhattan and uppereast areas where bird diversity is lower.
@@ -164,19 +176,33 @@ unique_species_per_park <- birds_sampled |>
 top_10_parks <- unique_species_per_park |>
   slice_max(unique_species_count, n = 15)
 
+top_10_parks <- top_10_parks |>
+  mutate(locality = case_when(
+    str_detect(locality, "Central Park--The Ramble") ~ "Central Park - Ramble",
+    str_detect(locality, "Central Park--North End") ~ "Central Park - North End",
+    str_detect(locality, "Central Park--The Ravine") ~ "Central Park - Ravine",
+    str_detect(locality, "Central Park--The Pool") ~ "Central Park - Pool",
+    str_detect(locality, "Central Park--North Woods") ~ "Central Park - North Woods",
+    str_detect(locality, "Stuyvesant Town-Peter Cooper Village") ~ "Stuyvesant Town",
+    str_detect(locality, "Central Park--The Pond and Hallett Sanctuary") ~ "Central Park - Hallett Sanctuary",
+    str_detect(locality, "Central Park--Jacqueline Kennedy Onassis Reservoir") ~ "Central Park - Reservoir",
+    str_detect(locality, "Central Park--Turtle Pond") ~ "Central Park - Turtle Pond",
+    TRUE ~ locality  # Keep other localities unchanged
+  ))
+
 # Step 3: Create the horizontal bar chart
 ggplot(top_10_parks, aes(x = reorder(locality, unique_species_count), y = unique_species_count)) +
-  geom_bar(stat = "identity", fill = "#9172EC") +
+  geom_bar(stat = "identity", fill = "#fd8d3c") +
   coord_flip() +  # Flip for horizontal bars
   labs(
-    title = "Top 15 Parks by Number of Unique Bird Species Sighted",
+    title = "Top 15 Parks by Number of Bird Species Sighted",
     x = "Locality",
     y = "Unique Species Count",
   ) +
   theme_minimal() +
   theme(
-    axis.text.x = element_text(size = 10),
-    axis.text.y = element_text(size = 8))
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 12))
 ```
 As shown in the bar chart, Central park and its specific areas including the rambles and north end are the top locations for unique bird sightings. Central Park provides the most diverse habitats favorable for bird populations. Besides Central Park, Randalls Island, Inwood Hill Park, and Governors Island are also great spots for bird-watching, contributing to bird diversity and sightings. Still, among the top 15 locations, 9 locations are within Central Park. Therefore, we want to focus the rest of the Part I observation to the bird sighting patterns of Central Park.
 
@@ -184,6 +210,8 @@ As shown in the bar chart, Central park and its specific areas including the ram
 
 ```{r}
 # Step 1: Get a basemap of Manhattan
+central_park_data <- birds_sampled |>
+  filter(grepl("Central Park", locality, ignore.case = TRUE))
 central_park_map <- get_stadiamap(
   bbox = c(left = -73.9839, bottom = 40.7624, right = -73.9480, top = 40.8007),
   zoom = 14,maptype = "alidade_smooth"  # Higher zoom for better focus
@@ -211,26 +239,29 @@ ggmap(central_park_map) +
   ) +
   # Optional: Hide the legend
   theme(
-    plot.title = element_text(size = 16, hjust = 0.5),  # Center and style the title
+    plot.title = element_text(hjust = 0.5),  # Center and style the title
     axis.title = element_text(size = 12)  # Style axis labels
   )
 ```
 
 The density plot shows the spatial distribution of unique bird species observed in Central Park. The higher density of unique bird sightings are represented by orange and red hexagons. We can see that the highest density of unique bird species appear around the latitude ~40.795 and longitude ~-73.955 and latitude ~40.772 and longitude ~-73.972. They represent some specific hotspots within the park where bird diversity is most prominent: The Great Lawn, Sheep Meadow, jacqueline kennedy onassis reservoir, and North Woods. Bird enthusiasts can simply input these pairs of latitude and longitude in their maps to determine where to go and enjoy birds in Central Park. 
 
-### Conclusion of Part I
+### Conclusion of Bird Location
 Therefore, from the location perspective, we inspect the bird sighting patterns in the different Manhattan neighbors, various Manhattan natural locations, and specifically Central Park. We wish this analysis can help bird lovers in Manhattan find their optimal place to observe birds.
 
-## Part II: What types of birds are there to see?
+## What types of birds are there to see?
 In this section, we will try to provide more information regarding the specific species observations, considering that people might be interested in catching specific bird species, 
+
+### Common Birds
 
 ```{r}
 birds_sampled |>
   mutate(common_name = fct_lump_n(common_name, 15)) |> 
   filter(common_name != "Other") |>
   count(common_name, sort = TRUE) |>
-  ggplot(aes(x = fct_infreq(common_name, n), y = n)) + 
-  geom_col(size = 3, fill = "#9172EC") +
+  ggplot(aes(x = fct_rev(fct_infreq(common_name, n)), y = n)) +  # Reverse order
+  geom_col(size = 3, fill = "#fd8d3c") +
+  coord_flip() + 
   labs(
     title = "Top 15 Most Frequently Observed Birds in 2023",
     x = "Bird Species",
@@ -238,18 +269,19 @@ birds_sampled |>
   ) +
   theme_minimal() +
   theme(
-    axis.text.x = element_text(size = 10, angle = 45, hjust = 1),
-    plot.title = element_text(size = 14),
+    axis.text.x = element_text(size = 10),
+    plot.title = element_text(hjust = 0.5),
     axis.text.y = element_text(size = 9)
   )
+
 ```
 House Sparrow and American Robin are the most frequently observed bird species, with over 200 observations each. European Starling, Rock Pigeon, and Northern Cardinal, also have a wide presence in Manhattan. Therefore, beginning birdwatchers or casual bird lovers can start with species that are abundant in Manhattan. Maybe you can snap a photo of a blue jay on your way back home.
 
-```{r, fig.width= 10}
+```{r, echo=FALSE,warning=FALSE,message=FALSE,error=FALSE, results='hide',fig.keep='all'}
 
 # Filter data for the top 5 birds
 birds_top_3 <- birds_sampled_filtered |>
-  filter(common_name %in% c("Rock Pigeon", "Blue Jay", "Northern Cardinal"))
+  filter(common_name %in% c("Rock Pigeon"))
 
 # Get the Manhattan basemap
 manhattan_map <- get_stadiamap(
@@ -267,14 +299,13 @@ ggmap(manhattan_map) +
   scale_fill_brewer(palette = "YlOrRd",name = "Bird Population",labels = c("Few Birds", "Moderate", "Many Birds", "Most Birds") ) +
   # Hide the legend
   labs(
-    title = "Starling, Cardinal, and Pigeon Distributions in Manhattan", 
+    title = "Rock Pigeon Distributions in Manhattan", 
     x = "Longitude",
     y = "Latitude"
   ) +
-  facet_wrap(~ common_name, ncol = 5)
   # Optional: Hide the legend
   theme(
-    plot.title = element_text(size = 16, hjust = 0.8),  # Center and style the title
+    plot.title = element_text(hjust = 0.5),  # Center and style the title
     axis.title = element_text(size = 12)  # Style axis labels
   )
 ```
@@ -283,11 +314,11 @@ If you want to see a blue jay, go to Central Park. They clustered around Sheep M
 
 ### Rare Birds
 
-```{r,fig.width= 10}
+```{r}
 
 #Filter data for the top 5 birds
 birds_last_3 <- birds_sampled_filtered |>
-  filter(common_name %in% c("Great Horned Owl", "Yellow-billed Cuckoo"))
+  filter(common_name %in% c("Great Horned Owl"))
 
 #Get the Manhattan basemap
 manhattan_map <- get_stadiamap(
@@ -305,23 +336,22 @@ ggmap(manhattan_map) +
   scale_fill_brewer(palette = "YlOrRd",name = "Bird Population",labels = c("Few Birds", "Moderate", "Many Birds", "Most Birds") ) +
   # Hide the legend
   labs(
-    title = "Great Horned Owl and Yellow-billed Cuckoo Distributions in Manhattan", 
+    title = "Great Horned Owl Distributions in Manhattan", 
     x = "Longitude",
     y = "Latitude"
   ) +
-  facet_wrap(~ common_name, ncol = 2)
   # Optional: Hide the legend
   theme(
-    plot.title = element_text(size = 16, hjust = 0.8),  # Center and style the title
+    plot.title = element_text(hjust = 0.5),  # Center and style the title
     axis.title = element_text(size = 12)  # Style axis labels
   )
 ```
 Rare birds like Great Horned Owl and Yellow-billed Cuckoo are only spotted in Central Park. So if you want to see some rare birds in Manhattan, try your luck at Central Park.
 
-### Conclusion of Part II
+### Conclusion of Bird Species
 The most common birds are house sparrow, american robin, european starling, rock pigeon, and so on. These types of birds are present throughout the city. Rare birds like owls and cuckoos are only seen in Central Park.
 
-## Part III: When to See My Birds?
+## When to See My Birds?
 Birds aren't active all day like your local seven-eleven. Sometimes they hide in the trees and sometimes they are sleeping. A few birds have migratory patterns that make them not present during the winter. In this section we will explore what time and what month of the year to see which types of birds.
 
 ### Which Month to See The Most Birds
@@ -340,8 +370,8 @@ birds_monthly_unique <- birds_sampled |>
 
 # Create an enhanced line plot for unique bird sightings
 ggplot(birds_monthly_unique, aes(x = reorder(month, month_numeric), y = unique_count, group = 1)) +
-  geom_line(size = 1.2, color = "#9172EC") +
-  geom_point(size = 3, color = "#9172EC") +
+  geom_line(size = 1.2, color = "#fd8d3c") +
+  geom_point(size = 3, color = "#fd8d3c") +
   labs(
     title = "Monthly Unique Bird Species Sightings",
     x = "Month",
@@ -350,8 +380,9 @@ ggplot(birds_monthly_unique, aes(x = reorder(month, month_numeric), y = unique_c
   theme_light() +
   theme(
     plot.title = element_text(size = 15),
-    axis.text.y = element_text(size = 8),
-    axis.title = element_text(size = 12),
+    axis.text.y = element_text(size = 12),
+    axis.text.x = element_text(size = 12),
+    axis.title = element_text(size = 15),
     legend.position = "right")
 ```
 From this graph that displays the monthly unique bird species, we can see that May has the highest diversity of unique bird species observed, indicating that it might be the peak time for birdwatching. September and October also show a notable increase in bird diversity. These months might correspond to the birds migration periods. On the other hand, July, December, and February exhibit lower diversity, possibly as a result of their more extreme weather conditions, whether it is too hot or too cold for birds. Therefore, the graph can provide relative information for bird enthusiasts to choose the appropriate time to go out doing birdwatching.
@@ -388,7 +419,7 @@ ggplot(birds_top_hourly, aes(x = hour, y = count, fill = common_name)) +
   theme_minimal() +
   theme(
     strip.text = element_text(size = 12),
-    plot.title = element_text(size = 16),
+    plot.title = element_text(hjust = 0.5),
     panel.grid.minor = element_blank()
   ) +
   scale_fill_brewer(palette = "Set2")
@@ -396,38 +427,39 @@ ggplot(birds_top_hourly, aes(x = hour, y = count, fill = common_name)) +
 
 The faceted bar graph shows the time the six most common birds are spotted throughout the day. They are most frequently spotted around 8 am, when you just get out of bed and ready to go to work. Gradually, they are less spotted throughout the day. When the night falls, the birds are not sighted very often. After 11 pm, no birds can be seen.
 
-### Time Series of Unique Bird Sightings
-While the monthly bird sighting graph gives us a good sense of bird sighting patterns, it cannot capture the day-to-day fluctuations or finer temporal variations within a given month, which leads to the need for a more granular time series view that we are going to draw next.
+### Time and Season
+Combining previous results, we want to explore what time in which season should we do bird-sighting. The graph below shows that Dawn at Spring is the best time to observe birds.
+
+
 ```{r}
+
+interactive <- birds_sampled |>
+  mutate(
+    observation_time = hms::as_hms(time_observations_started),
+    month = format(as.Date(observation_date), "%m"),
+    season = factor(case_when(
+      month %in% c("12", "01", "02") ~ "Winter",
+      month %in% c("03", "04", "05") ~ "Spring",
+      month %in% c("06", "07", "08") ~ "Summer",
+      month %in% c("09", "10", "11") ~ "Fall"
+    ), levels = c("Spring", "Summer", "Fall", "Winter")) 
+  ) |>
+  group_by(season, common_name) |>
+  summarise(sightings = sum(observation_count), .groups = "drop")
+
 # Prepare the data: Count unique species per day
 unique_species_time_series <- birds_sampled |>
   group_by(observation_date) |>
   summarise(unique_species_count = n_distinct(common_name), .groups = "drop")
 unique_species_time_series$observation_date <- as.Date(unique_species_time_series$observation_date)
 
-# Add a 7-day rolling average for smoothing
-unique_species_time_series <- unique_species_time_series |>
-  arrange(observation_date) |>
-  mutate(rolling_avg = zoo::rollmean(unique_species_count, k = 7, fill = NA))
 
-# Plot the time series graph
-ggplot(unique_species_time_series, aes(x = observation_date)) +
-  geom_line(aes(y = unique_species_count), color = "black", alpha = 0.5) +  
-  geom_line(aes(y = rolling_avg), color = "#9172EC", size = 1.2) +  
-  labs(
-    title = "Time Series of Unique Bird Species Sightings",
-    x = "Date",
-    y = "Count"
-  ) +
-  theme_minimal() +
-  theme(
-    plot.title = element_text(size = 15),
-    axis.text.x = element_text(angle = 45, hjust = 1))
 ```
-This time series graph basically aligns with the previous monthly graph while this one gives me more details of the fluctuation of unique bird species sighting pattern. First, a sharp peak in unique bird sightings occurs around late April to May, which aligns with spring migration. A smaller increase can also be observed from September to October, corresponding to fall migration. Unique species sightings are at their lowest during winter months (December-February), indicating harsher conditions for birds at these times. Outside of these times mentioned above, the number of unique species observations remains stable with smaller fluctuations. In this way, through this time series graph, bird enthusiasts can gain more detailed insights which month/period to go for birdwatching.
 
-## Time and Season
-Combining previous results, we want to explore what time in which season should we do bird-sighting. The graph below shows that Dawn at Spring is the best time to observe birds.
+```{r}
+interactive |>filter(common_name =="European Starling")
+```
+
 
 ```{r}
 # Step 1: Reorder season and define custom colors
@@ -472,7 +504,7 @@ ggplot(birds_time_season_analysis, aes(x = time_interval, y = unique_species_cou
   theme_minimal() +
   theme(
     axis.text.x = element_text(angle = 45, hjust = 1),
-    plot.title = element_text(size = 15),
+    plot.title = element_text(hjust = 0.5),
     legend.position = "right"
   )
 
@@ -480,5 +512,5 @@ ggplot(birds_time_season_analysis, aes(x = time_interval, y = unique_species_cou
 ```
 Spring and Fall are the best seasons to see the most variety of birds. Spring shows the highest unique species sightings across all time interval, particularly during dawn (5:00-8:00) and early morning (8:00-10:00). From another perspective, across all seasons, early morning (8:00-10:00) consistently shows a higher observation of unique bird species, making it potentially the best time for birdwatching. This makes sense since most birds are more active during cooler hours right after sunrise. Besides early morning, dawn (5:00-8:00) also is quite fruitful in Spring and Fall particularly, since migratory stopvoers and feeding activities often happen during these times. However, evening (18:00-21:00) has the lowest species observations across all seasons, reflecting reduced bird activity as they settle for the night. Hence, based on this graph, we can suggest bird lovers that early morning should be the ideal time for birdwatching, and dawn would also not be a bad choice for spring and fall. For all seasons, bird lovers should definitely avoid evenings if they feel like going out to observe birds.
 
-### Conclusion of Part III
+### Conclusion of Time of Bird Sighting
 Therefore, by plotting the monthly unique bird species sighting graph, the time series graph, and the seasonal graph by time interval, we hope to give bird lovers more insights into when they can observe the greatest diversity of birds, so they won't pick the wrong time to do bird sighting and become disappointed as a result. 

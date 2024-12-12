@@ -1,13 +1,142 @@
 # Interactive graph
 
-<style>
-  * {
-    font-family: sans-serif;
-  }
-</style> 
+The following is an animated graph of how bird sightings change by season for four different species. We can see that certain species are more prevalent in different seasons. For example, European Starlings are most widely seen during the Summer. Bird sighters might want to consider seasonal factors when planning bird-sighting events.
 
-<div id="plot">
-</div>
+  <style>
+    * {
+      font-family: sans-serif;
+    }
+    #plot {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 20px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-<script src="scripts/myscript.js"></script>
+  <div id="plot"></div>
+  <script>
+    // Select the #plot div
+    const plot = d3.select('#plot');
+
+    // Define SVG dimensions
+    const width = 500;
+    const height = 500;
+    const margin = { top: 50, right: 20, bottom: 70, left: 50 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+
+    // Create SVG element
+    const svg = plot.append('svg')
+      .attr('width', width)
+      .attr('height', height);
+
+    // Create group for chart elements
+    const g = svg.append('g')
+      .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+    // Datasets to animate through
+   const datasets = [
+      [1183, 472, 551, 163],
+      [799, 103, 410, 2149],
+      [317, 233, 226, 237],
+      [1075, 348, 262, 327]
+    ];
+
+    // bird_names for x-axis
+    const bird_names = ['American Robin', 'Canada Goose', 'Mourning Dove', 'European Starling'];
+
+    // Create scales
+    const xScale = d3.scaleBand()
+      .domain(bird_names)
+      .range([0, innerWidth])
+      .padding(0.2);
+
+    const yScale = d3.scaleLinear()
+      .domain([0, 2200]) // Assuming max value across datasets is 100
+      .range([innerHeight, 0]);
+
+    // Add x-axis
+    g.append('g')
+      .attr('class', 'x-axis')
+      .attr('transform', `translate(0, ${innerHeight})`)
+      .call(d3.axisBottom(xScale));
+
+    // Add y-axis
+    g.append('g')
+      .attr('class', 'y-axis')
+      .call(d3.axisLeft(yScale));
+
+    // Add y-axis label
+    svg.append('text')
+      .attr('x', -height / 2)
+      .attr('y', margin.left / 2 - 10)
+      .attr('transform', 'rotate(-90)')
+      .attr('text-anchor', 'middle')
+      .style('font-size', '12px')
+      .text('Sightings');
+
+    // Add chart title
+    svg.append('text')
+      .attr('x', width / 2)
+      .attr('y', margin.top / 2)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '16px')
+      .text('Bird Sightings By Season of 4 Common Birds');
+
+    // Add x-axis dynamic label
+    const xLabel = svg.append('text')
+      .attr('x', width / 2)
+      .attr('y', height - 20)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '12px')
+      .style('font-weight', 'bold')
+      .text('Spring');
+
+    // Function to update bars
+    function updateChart(data, label) {
+      // Bind data
+      const bars = g.selectAll('.bar')
+        .data(data);
+
+      // Enter phase
+      bars.enter()
+        .append('rect')
+        .attr('class', 'bar')
+        .attr('x', (d, i) => xScale(bird_names[i]))
+        .attr('y', innerHeight)
+        .attr('width', xScale.bandwidth())
+        .attr('height', 0)
+        .attr('fill', 'orange')
+        .merge(bars) // Merge enter and update
+        .transition()
+        .duration(1000)
+        .attr('x', (d, i) => xScale(bird_names[i]))
+        .attr('y', d => yScale(d))
+        .attr('height', d => innerHeight - yScale(d));
+
+      // Exit phase
+      bars.exit()
+        .transition()
+        .duration(1000)
+        .attr('y', innerHeight)
+        .attr('height', 0)
+        .remove();
+
+      // Update x-axis label
+      xLabel.text(`Current Dataset: ${label}`);
+    }
+
+    // Animation cycle
+    let currentDataset = 0;
+    const labels = ['Spring', 'Summer', 'Autumn', 'Winter'];
+    function cycleDatasets() {
+      updateChart(datasets[currentDataset], labels[currentDataset]);
+      currentDataset = (currentDataset + 1) % datasets.length;
+      setTimeout(cycleDatasets, 2000); // Change dataset every 2 seconds
+    }
+
+    // Start animation
+    cycleDatasets();
+  </script>
