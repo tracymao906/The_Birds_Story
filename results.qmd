@@ -47,7 +47,7 @@ birds_sampled_filtered_nta <- nyc_point_poly(birds_sampled_filtered_point, "nta"
 ```
 
 ```{r}
-# Step 3: Get the Manhattan basemap
+# Get the Manhattan basemap
 
 register_stadiamaps("cce884ac-3f72-43ac-8b87-82599f324a82", write = FALSE)
 
@@ -247,11 +247,11 @@ House Sparrow and American Robin are the most frequently observed bird species, 
 
 ```{r, fig.width= 10}
 
-# Step 2: Filter data for the top 5 birds
+# Filter data for the top 5 birds
 birds_top_3 <- birds_sampled_filtered |>
   filter(common_name %in% c("Rock Pigeon", "Blue Jay", "Northern Cardinal"))
 
-# Step 3: Get the Manhattan basemap
+# Get the Manhattan basemap
 manhattan_map <- get_stadiamap(
   bbox = c(left = -74.03, bottom = 40.7, right = -73.92, top = 40.85),
   zoom = 13
@@ -277,9 +277,6 @@ ggmap(manhattan_map) +
     plot.title = element_text(size = 16, hjust = 0.8),  # Center and style the title
     axis.title = element_text(size = 12)  # Style axis labels
   )
-
-
-
 ```
 
 If you want to see a blue jay, go to Central Park. They clustered around Sheep Meadow and North Meadow. If you want to see a pigeon, however, they are everywhere. The bird population density map illustrates the distributions of three types of species. Central Park has the highest number of most types of birds. Other birds like rock pigeons and house sparrows are spread out throughout the city.
@@ -288,11 +285,11 @@ If you want to see a blue jay, go to Central Park. They clustered around Sheep M
 
 ```{r,fig.width= 10}
 
-# Step 2: Filter data for the top 5 birds
+#Filter data for the top 5 birds
 birds_last_3 <- birds_sampled_filtered |>
   filter(common_name %in% c("Great Horned Owl", "Yellow-billed Cuckoo"))
 
-# Step 3: Get the Manhattan basemap
+#Get the Manhattan basemap
 manhattan_map <- get_stadiamap(
   bbox = c(left = -74.03, bottom = 40.7, right = -73.92, top = 40.85),
   zoom = 13
@@ -318,8 +315,6 @@ ggmap(manhattan_map) +
     plot.title = element_text(size = 16, hjust = 0.8),  # Center and style the title
     axis.title = element_text(size = 12)  # Style axis labels
   )
-
-
 ```
 Rare birds like Great Horned Owl and Yellow-billed Cuckoo are only spotted in Central Park. So if you want to see some rare birds in Manhattan, try your luck at Central Park.
 

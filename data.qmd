@@ -48,7 +48,7 @@ warnings()
 
 ```{r}
 # display all types of birds in Manhattan in 2023
-unique(birds_sampled$common_name) 
+# unique(birds_sampled$common_name) 
 ```
 
 ## Description
